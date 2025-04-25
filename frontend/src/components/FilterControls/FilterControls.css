@@ -1,7 +1,7 @@
 /* src/components/FilterControls/FilterControls.css */
 .filter-controls {
-    margin-bottom: 2rem;
-    padding: 1.5rem;
+    margin: 20px 0;
+    padding: 15px;
     background-color: #f8f9fa;
     border-radius: 8px;
   }
@@ -21,8 +21,8 @@
   }
   
   .filter-group {
-    flex: 1;
-    min-width: 200px;
+    display: flex;
+    justify-content: center;
   }
   
   .filter-group label {
@@ -95,4 +95,24 @@
       width: 100%;
       justify-content: center;
     }
+  }
+
+  .category-select {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    background-color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    min-width: 200px;
+    outline: none;
+  }
+  
+  .category-select:hover {
+    border-color: #007bff;
+  }
+  
+  .category-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
   }

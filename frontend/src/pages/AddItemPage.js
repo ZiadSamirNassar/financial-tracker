@@ -7,6 +7,9 @@ import './AddItemPage.css';
 
 function AddItemPage() {
   const [items, setItems] = useState([]);
+  const [userInfo, setUserInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [totalSpent, setTotalSpent] = useState(0);
   const [budget, setBudget] = useState(() => {
     // Initialize budget from localStorage or default to 1000
@@ -19,6 +22,61 @@ function AddItemPage() {
   useEffect(() => {
     localStorage.setItem('budget', budget.toString());
   }, [budget]);
+
+  const fetchUserInfo = async () => {
+    try {
+      console.log('AddItemPage: Fetching user info...');
+      const response = await fetch('http://localhost:3001/userinfo');
+      if (!response.ok) {
+        throw new Error('Failed to fetch user info');
+      }
+      const data = await response.json();
+      console.log('AddItemPage: Fetched user info:', data);
+      setUserInfo(data);
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to load user information');
+      setLoading(false);
+      console.error('Error fetching user info:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, []);
+
+  const handleBudgetUpdated = () => {
+    console.log('AddItemPage: Budget updated, refreshing user info');
+    fetchUserInfo();
+  };
+
+  const handleItemAdded = () => {
+    console.log('AddItemPage: Item added, refreshing user info');
+    fetchUserInfo();
+  };
+
+  const handleClearDatabase = async () => {
+    if (window.confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+      try {
+        const response = await fetch('http://localhost:3001/clear', {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to clear database');
+        }
+
+        // Clear local storage
+        localStorage.removeItem('financeItems');
+        
+        // Refresh the page to start fresh
+        window.location.reload();
+      } catch (err) {
+        setError('Failed to clear database');
+        console.error('Error clearing database:', err);
+      }
+    }
+  };
 
   const handleAddItem = (newItem) => {
     const itemCost = parseFloat(newItem.price) * parseInt(newItem.quantity);
@@ -59,7 +117,14 @@ function AddItemPage() {
     }
   }, []);
 
-  const remainingBudget = budget - totalSpent;
+
+  if (loading) {
+    return <div className="loading">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
 
   return (
     <div className="add-item-page">
@@ -67,22 +132,16 @@ function AddItemPage() {
         <h1>Personal Finance Tracker</h1>
         <div className="page-actions">
           <button 
-            className="action-btn active"
-            onClick={() => navigate('/add-item')}
-          >
-            Add Item
-          </button>
-          <button 
             className="action-btn"
             onClick={() => navigate('/show-items')}
           >
             Show Items
           </button>
           <button 
-            className="action-btn reset-btn"
-            onClick={handleResetBudget}
+            className="action-btn clear-btn"
+            onClick={handleClearDatabase}
           >
-            Reset Budget
+            Clear All Data
           </button>
         </div>
       </header>
@@ -90,28 +149,43 @@ function AddItemPage() {
       <BudgetCounter 
         currentBudget={budget}
         onUpdateBudget={handleUpdateBudget} 
+        onBudgetUpdated={handleBudgetUpdated}
       />
       
       <div className="summary-cards">
         <div className="summary-card">
-          <span className="summary-label">Items Added</span>
-          <ItemCounter count={items.length} />
+          <span className="summary-label">Total Budget</span>
+          <div className="total-budget" style={{fontSize: '25px'}}>
+            ${userInfo.total_budget.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })}
+          </div>
         </div>
         <div className="summary-card">
           <span className="summary-label">Total Spent</span>
-          <div className="total-spent">${totalSpent.toFixed(2)}</div>
+          <div className="total-spent" style={{ color: 'red', fontSize: '25px', paddingInline: '20px', paddingTop: '10px', paddingBottom: '10px', border: '2px solid red', borderRadius: '10px' }}>
+            ${userInfo.payments.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })}
+          </div>
         </div>
         <div className="summary-card">
           <span className="summary-label">Remaining Budget</span>
           <div className={`remaining-budget ${
-            remainingBudget < 0 ? 'negative' : remainingBudget < budget * 0.2 ? 'warning' : ''
-          }`}>
-            ${remainingBudget.toFixed(2)}
+            userInfo.remaining_budget < 0 ? 'negative' : 
+            userInfo.remaining_budget < userInfo.total_budget * 0.2 ? 'warning' : ''
+          }` } style={{ fontSize: '25px' }}>
+            ${userInfo.remaining_budget.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })}
           </div>
         </div>
       </div>
       
-      <AddItemForm onAddItem={handleAddItem} />
+      <AddItemForm onAddItem={handleItemAdded} />
     </div>
   );
 }

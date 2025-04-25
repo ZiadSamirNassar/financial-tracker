@@ -1,10 +1,8 @@
 // src/components/FilterControls/FilterControls.js
 import React from 'react';
-import { FiFilter } from 'react-icons/fi';
 import './FilterControls.css';
 
 const FilterControls = ({ 
-  onFilter, 
   dateRange,
   onDateChange,
   categories,
@@ -13,45 +11,21 @@ const FilterControls = ({
 }) => {
   return (
     <div className="filter-controls">
-      <h3>Show Items</h3>
-      
-      <div className="filter-row">
-        <div className="filter-group">
-          <label>Filter by Date</label>
-          <div className="date-range">
-            <input
-              type="date"
-              name="fromDate"
-              value={dateRange.from}
-              onChange={(e) => onDateChange('from', e.target.value)}
-              placeholder="From"
-            />
-            <span>to</span>
-            <input
-              type="date"
-              name="toDate"
-              value={dateRange.to}
-              onChange={(e) => onDateChange('to', e.target.value)}
-              placeholder="To"
-            />
-          </div>
-        </div>
-
-        <div className="filter-group">
-          <label>Filter by Category</label>
-          <select
-            value={selectedCategory}
-            onChange={onCategoryChange}
-          >
-            {categories.map(category => (
-              <option key={category} value={category}>{category}</option>
-            ))}
-          </select>
-        </div>
-
-        <button className="filter-btn" onClick={onFilter}>
-          <FiFilter /> Filter
-        </button>
+      <div className="filter-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-evenly' }}>
+        <label style={{ fontSize: '19px', fontWeight: 'bold', color: 'orange' }}>Classify With Category</label>
+        <select
+          value={selectedCategory}
+          onChange={onCategoryChange}
+          className="category-select"
+          style={{ width: '75%' }}
+        >
+            <option value="Food">Food</option>
+            <option value="Transportation">Transportation</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Other">Other</option>
+        </select>
       </div>
     </div>
   );
